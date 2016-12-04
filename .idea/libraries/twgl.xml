@@ -1,0 +1,16 @@
+<component name="libraryTable">
+  <library name="twgl" type="javaScript">
+    <properties>
+      <sourceFilesUrls>
+        <item url="file://$PROJECT_DIR$/GraphicsTownJS2015-master/Libraries/twgl-full.js" />
+      </sourceFilesUrls>
+    </properties>
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/GraphicsTownJS2015-master/Libraries/twgl-full.js" />
+    </CLASSES>
+    <DOCUMENTATION>
+      <root url="https://twgljs.org/docs/" />
+    </DOCUMENTATION>
+    <SOURCES />
+  </library>
+</component>
