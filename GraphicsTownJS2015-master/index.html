@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<!-- Graphics town framework code by Mike Gleicher
+  -- written October, 2015
+  -->
+<head>
+    <meta charset="UTF-8">
+    <title>GraphicsTown JS 2015!</title>
+</head>
+<body>
+<!--<script src="OBJLoader.js"></script>-->
+<!--<script src='Libraries/earcut-master/viz/viz.js'></script>-->
+<!--<script src="Libraries/earcut-master/src/earcut.js"></script>-->
+<!-- load this stuff first -->
+<script src="Libraries/twgl-full.js"></script>
+<script src="Libraries/panel.js"></script>
+<script src="Libraries/arcball.js"></script>
+<script src="grobject.js"></script>
+<script src="ExampleObjects/ground.js"></script>
+
+
+<!-- This is where we load the objects for the world -->
+<!--<script src="ExampleObjects/simplest.js"></script>-->
+<!--<script src="ExampleObjects/texturedplane.js"></script>-->
+<!--<script src="ExampleObjects/cube.js"></script>-->
+<script src="ExampleObjects/cube_house.js"></script>
+<script src="ExampleObjects/peg.js"></script>
+<!--mime type mismatch error-->
+<script type="text/javascript" src="resources/Wolf.objjs"></script>
+<!--<script type="text/javascript" src="resources/long_house_blender_export.objjs">-->
+<!--//    console.log(LoadedOBJFiles["long_house_blender_export.obj"]);-->
+<!--//    var long_house_arrs = LoadedOBJFiles["long_house_blender_export.obj"];-->
+<!--//    var glong_house_arrs = long_house_arrs.groups["long_house_blender_export"];-->
+<!--//    for(var i = 0;i < glong_house_arrs.faces.length;i++) {-->
+<!--//        var face = glong_house_arrs.faces[i];-->
+<!--//        console.log(face);//all the faces in wolf model!.-->
+<!--//    }-->
+<!--</script>-->
+<!--<script src="ExampleObjects/long_house.js"></script>-->
+<!--<script src="ExampleObjects/person.js"></script>-->
+
+
+<!-- I am adding the helicopter -->
+<!--<script src="Helicopter/helicopter.js"></script>-->
+
+<!-- This gets loaded LAST (actually, it probably doesn't have to) -->
+<script src="graphicstown.js"></script>
+</body>
+
+<!-- all of the shaders get stuck here in the HTML because
+  -- that's the only way I know to load them without either
+  -- sticking them in JavaScript strings, or using a web server
+  -->
+
+<!--todo mention that you changed type to prof for text highlighting-->
+<!--used to be "notjs"-->
+
+<script id="cube-vs" type="x-shader/x-vertex">
+// specialized shader for the simple cube
+// we assume that the model matrix works as the normal
+//      matrix - this only is try if the model matrix
+//      it a rotate/translate
+//      (uniform scale is OK since we re-normalize)
+// color is solid
+// simple lighting
+    precision highp float;
+
+    attribute vec3 vpos;
+    attribute vec3 vnormal;
+    varying vec3 outColor;
+
+    uniform mat4 view;
+    uniform mat4 proj;
+    uniform mat4 model;
+    uniform vec3 lightdir;
+    uniform vec3 cubecolor;
+
+
+    void main(void) {
+        gl_Position = proj * view * model * vec4(vpos, 1.0);
+        vec4 normal = normalize(model * vec4(vnormal,0.0));
+        float diffuse = .5 + .5*abs(dot(normal, vec4(lightdir,0.0)));
+        outColor = cubecolor * diffuse;
+    }
+
+
+</script>
+<script id="cube-fs" type="x-shader/x-fragment">
+// simple shader that does vertex coloring
+//  (e.g. the vertex shader figures the lighting
+// note this is used for more than just the cube
+    precision highp float;
+    varying vec3 outColor;
+    void main(void) {
+        gl_FragColor = vec4(outColor, 1.0);
+    }
+
+
+</script>
+
+<script id="cube_house-vs" type="x-shader/x-vertex">
+// specialized shader for the simple cube_house
+// we assume that the model matrix works as the normal
+//      matrix - this only is try if the model matrix
+//      it a rotate/translate
+//      (uniform scale is OK since we re-normalize)
+// color is solid
+// simple lighting
+    precision highp float;
+
+    attribute vec3 vpos;
+    attribute vec3 vnormal;
+
+//    varying vec3 outColor;
+    varying vec3 outNormal;
+    varying vec3 outPos;
+
+
+    uniform mat4 view; // he had mvmatrix
+    uniform mat4 proj; // Pmatrix
+    uniform mat4 model; // Nmatrix
+    uniform vec3 lightdir;        // ldirection
+    uniform vec3 cube_housecolor; // directional color
+
+    void main(void) {
+        gl_Position = proj * view * model * vec4(vpos, 1.0); // uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
+//        vec4 normal = normalize(model * vec4(vnormal,0.0));
+        outPos =  (view * model * vec4(vpos, 1.0)).xyz;
+        outNormal = normalize(view * model * vec4(vnormal,0.0)).xyz;
+//        float diffuse = .5 + .5*abs(dot(normal, vec4(lightdir,0.0)));
+//        outColor = cube_housecolor * diffuse;
+    }
+
+
+</script>
+<script id="cube_house-fs" type="x-shader/x-fragment">
+// simple shader that does vertex coloring
+//  (e.g. the vertex shader figures the lighting
+// note this is used for more than just the cube
+    precision highp float;
+    varying vec3 outNormal;
+    varying vec3 outPos;
+//    varying vec3 outColor;
+    uniform vec3 lightdir;
+    uniform vec3 cube_housecolor;
+
+    void main(void) {
+
+        vec3 n = normalize(outNormal);
+        vec3 e = normalize(-outPos);
+        vec3 l = normalize(lightdir);
+        vec3 h = normalize(e+l);
+        float diffuse = .5 + .5*abs(dot(outNormal, lightdir));
+        float specular = pow(max(dot(n,h),0.0),512.0);
+        vec3 outColor = cube_housecolor * diffuse;
+//        vec3 outColor = cube_housecolor * specular;
+        gl_FragColor = vec4(outColor, 1.0);
+    }
+
+
+</script>
+
+<script id="peg-vs" type="x-shader/x-vertex">
+// specialized shader for the simple cube_house
+// we assume that the model matrix works as the normal
+//      matrix - this only is try if the model matrix
+//      it a rotate/translate
+//      (uniform scale is OK since we re-normalize)
+// color is solid
+// simple lighting
+    precision highp float;
+
+    attribute vec3 vpos;
+    attribute vec3 vnormal;
+
+//    varying vec3 outColor;
+    varying vec3 outNormal;
+    varying vec3 outPos;
+
+
+    uniform mat4 view; // he had mvmatrix
+    uniform mat4 proj; // Pmatrix
+    uniform mat4 model; // Nmatrix
+    uniform vec3 lightdir;        // ldirection
+    uniform vec3 pegcolor; // directional color
+
+    void main(void) {
+        gl_Position = proj * view * model * vec4(vpos, 1.0); // uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
+//        outNormal = fnormal;
+//        vec4 normal = normalize(model * vec4(vnormal,0.0));
+        outPos =  (view * model * vec4(vpos, 1.0)).xyz;
+        outNormal = normalize(view * model * vec4(vnormal,0.0)).xyz;
+//        float diffuse = .5 + .5*abs(dot(normal, vec4(lightdir,0.0)));
+//        outColor = pegcolor * diffuse;
+    }
+
+//    uniform mat4 u_worldViewProjection;
+//uniform vec3 u_lightWorldPos;
+//uniform mat4 u_world;
+//uniform mat4 u_viewInverse;
+//uniform mat4 u_worldInverseTranspose;
+//attribute vec4 a_position;
+//attribute vec3 a_normal;
+//attribute vec2 a_texcoord;
+//varying vec4 v_position;
+//varying vec2 v_texCoord;
+//varying vec3 v_normal;
+//varying vec3 v_surfaceToLight;
+//varying vec3 v_surfaceToView;
+//void main() {
+//  v_texCoord = a_texcoord;
+//  v_position = (u_worldViewProjection * a_position);
+//  v_normal = (u_worldInverseTranspose * vec4(a_normal, 0)).xyz;
+//  v_surfaceToLight = u_lightWorldPos - (u_world * a_position).xyz;
+//  v_surfaceToView = (u_viewInverse[3] - (u_world * a_position)).xyz;
+//  gl_Position = v_position;
+
+
+
+
+
+</script>
+<script id="peg-fs" type="x-shader/x-fragment">
+// simple shader that does vertex coloring
+//  (e.g. the vertex shader figures the lighting
+// note this is used for more than just the cube
+    precision highp float;
+    varying vec3 outNormal;
+    varying vec3 outPos;
+//    varying vec3 outColor;
+    uniform vec3 lightdir;
+    uniform vec3 pegcolor;
+
+    void main(void) {
+
+        vec3 n = normalize(outNormal);
+        vec3 e = normalize(-outPos);
+        vec3 l = normalize(lightdir);
+        vec3 h = normalize(e+l);
+        float diffuse = .5 + .5*abs(dot(outNormal, lightdir));
+        float specular = pow(max(dot(n,h),0.0),512.0);
+//        vec3 outColor = pegcolor * diffuse;
+//        vec3 outColor = pegcolor * specular;
+        gl_FragColor = vec4(pegcolor * diffuse + pegcolor * specular, 1.0);
+    }
+
+
+</script>
+
+<script id="long_house-vs" type="x-shader/x-vertex">
+// specialized shader for the simple cube_house
+// we assume that the model matrix works as the normal
+//      matrix - this only is try if the model matrix
+//      it a rotate/translate
+//      (uniform scale is OK since we re-normalize)
+// color is solid
+// simple lighting
+    precision highp float;
+
+    attribute vec3 vpos;
+    attribute vec3 vnormal;
+
+//    varying vec3 outColor;
+    varying vec3 outNormal;
+    varying vec3 outPos;
+
+
+    uniform mat4 view; // he had mvmatrix
+    uniform mat4 proj; // Pmatrix
+    uniform mat4 model; // Nmatrix
+    uniform vec3 lightdir;        // ldirection
+    uniform vec3 cube_housecolor; // directional color
+
+    void main(void) {
+        gl_Position = proj * view * model * vec4(vpos, 1.0); // uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
+//        vec4 normal = normalize(model * vec4(vnormal,0.0));
+        outPos =  (view * model * vec4(vpos, 1.0)).xyz;
+        outNormal = normalize(view * model * vec4(vnormal,0.0)).xyz;
+//        float diffuse = .5 + .5*abs(dot(normal, vec4(lightdir,0.0)));
+//        outColor = cube_housecolor * diffuse;
+    }
+
+
+</script>
+<script id="long_house-fs" type="x-shader/x-fragment">
+// simple shader that does vertex coloring
+//  (e.g. the vertex shader figures the lighting
+// note this is used for more than just the cube
+    precision highp float;
+    varying vec3 outNormal;
+    varying vec3 outPos;
+//    varying vec3 outColor;
+    uniform vec3 lightdir;
+    uniform vec3 cube_housecolor;
+
+    void main(void) {
+
+        vec3 n = normalize(outNormal);
+        vec3 e = normalize(-outPos);
+        vec3 l = normalize(lightdir);
+        vec3 h = normalize(e+l);
+        float diffuse = .5 + .5*abs(dot(outNormal, lightdir));
+        float specular = pow(max(dot(n,h),0.0),512.0);
+        vec3 outColor = cube_housecolor * diffuse;
+//        vec3 outColor = cube_housecolor * specular;
+        gl_FragColor = vec4(outColor, 1.0);
+    }
+
+
+</script>
+
+<!-- Special Ground Plane Shader - makes a boring
+  -- checkerboard
+  -->
+<script id="ground-vs" type="x-shader/x-vertex">
+    precision highp float;
+
+    attribute vec3 vpos;
+    varying vec3 outPos;
+
+    uniform mat4 view;
+    uniform mat4 proj;
+
+    void main(void) {
+        gl_Position = proj * view * vec4(vpos, 1.0);
+        outPos = vpos;
+    }
+
+
+</script>
+<script id="ground-fs" type="x-shader/x-fragment">
+    // note this is used for more than just the cube
+    precision highp float;
+    varying vec3 outPos;
+    void main(void) {
+        float xs = step(1.0,mod(outPos.x,2.0));
+        float zs = step(1.0,mod(outPos.z,2.0));
+        float ss = (xs>.5) ? zs : 1.0-zs;
+        gl_FragColor = mix(vec4(0.5,0.5,0.5,1),
+                           vec4(0.3,0.5,0.4,1),
+                           ss
+                           );
+
+    }
+
+
+</script>
+
+</html>
