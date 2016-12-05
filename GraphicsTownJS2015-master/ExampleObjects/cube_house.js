@@ -92,10 +92,10 @@ var Spinningcube_house = undefined;
 
             // console.log(cynarr);
             buffers = twgl.createBufferInfoFromArrays(drawingState.gl, arrays);
-            console.log("cube_house arrays");
-            console.log(arrays);
-            console.log("cube_house buffers");
-            console.log(buffers);
+            // console.log("cube_house arrays");
+            // console.log(arrays);
+            // console.log("cube_house buffers");
+            // console.log(buffers);
         }
 
     };

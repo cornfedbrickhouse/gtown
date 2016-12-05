@@ -32,7 +32,7 @@ var isValidGraphicsObject = function (object) {
     }
 
     return true;
-}
+};
 window.onload = function () {
     "use strict";
 
@@ -65,7 +65,7 @@ window.onload = function () {
         driveTheta = 0;
         driveXTheta = 0;
 
-    }
+    };
     controls.appendChild(resetButton);
 
     // make some checkboxes - using my cheesy panels code
@@ -92,7 +92,7 @@ window.onload = function () {
         view: twgl.m4.identity(),
         camera: twgl.m4.identity(),
         sunDirection: [0, 1, 0]
-    }
+    };
 
 
     // information for the cameras
@@ -103,7 +103,7 @@ window.onload = function () {
     var arcball = new ArcBall(canvas);
 
     // for timing
-    var realtime = 0
+    var realtime = 0;
     var lastTime = Date.now();
 
     // parameters for driving
@@ -126,9 +126,6 @@ window.onload = function () {
     };
 
     // the actual draw function - which is the main "loop"
-    //todo surround with loader, make draw and init take buffer as var
-    var secret_message = "jingle bells";
-
     function draw() {
         // advance the clock appropriately (unless its stopped)
         var curTime = Date.now();
@@ -224,8 +221,8 @@ window.onload = function () {
             camera: cameraM,
             timeOfDay: tod,
             sunDirection: sunDirection,
-            realtime: realtime,
-        }
+            realtime: realtime
+        };
 
         // initialize all of the objects that haven't yet been initialized (that way objects can be added at any point)
         grobjects.forEach(function (obj) {
@@ -263,7 +260,6 @@ window.onload = function () {
             });
         }
         window.requestAnimationFrame(draw);
-    };
+    }
     draw();
-    //todo end loader surround
 };
